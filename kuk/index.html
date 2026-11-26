@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>kuk diseño</title>
+
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+</head>
+
+<body>
+<style>
+    html, body {
+        margin: 0;
+        overflow: hidden;
+    }
+
+    a-scene canvas {
+        touch-action: none;
+    }
+</style>
+
+<script>
+AFRAME.registerComponent('touch-look', {
+
+    init: function () {
+        this.canvas = null;
+        this.active = false;
+        this.lastX = 0;
+        this.lastY = 0;
+
+        this.onDown = this.onDown.bind(this);
+        this.onMove = this.onMove.bind(this);
+        this.onUp = this.onUp.bind(this);
+
+        this.el.sceneEl.addEventListener('renderstart', () => {
+            this.canvas = this.el.sceneEl.canvas;
+
+            this.canvas.addEventListener(
+                'pointerdown', this.onDown
+            );
+
+            this.canvas.addEventListener(
+                'pointermove', this.onMove
+            );
+
+            this.canvas.addEventListener(
+                'pointerup', this.onUp
+            );
+
+            this.canvas.addEventListener(
+                'pointercancel', this.onUp
+            );
+        });
+    },
+
+    onDown: function (e) {
+        if (e.pointerType !== 'touch') return;
+
+        this.active = true;
+        this.lastX = e.clientX;
+        this.lastY = e.clientY;
+
+        this.canvas.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    },
+
+    onMove: function (e) {
+        if (!this.active) return;
+
+        const dx = e.clientX - this.lastX;
+        const dy = e.clientY - this.lastY;
+
+        this.lastX = e.clientX;
+        this.lastY = e.clientY;
+
+        const controles = this.el.components['look-controls'];
+
+        if (!controles) return;
+
+        const sensibilidad = 0.004;
+
+        controles.yawObject.rotation.y -= dx * sensibilidad;
+
+        controles.pitchObject.rotation.x -= dy * sensibilidad;
+
+        controles.pitchObject.rotation.x = Math.max(
+            -1.45,
+            Math.min(1.45, controles.pitchObject.rotation.x)
+        );
+
+        e.preventDefault();
+    },
+
+    onUp: function () {
+        this.active = false;
+    },
+
+    remove: function () {
+        if (!this.canvas) return;
+
+        this.canvas.removeEventListener('pointerdown', this.onDown);
+        this.canvas.removeEventListener('pointermove', this.onMove);
+        this.canvas.removeEventListener('pointerup', this.onUp);
+        this.canvas.removeEventListener('pointercancel', this.onUp);
+    }
+});
+</script>
+<a-scene background="color: #EAF2F5">
+<a-assets>
+    <img id="caraFeliz" src="perro_feliz.png">
+    <img id="caraEnojada" src="perro_enojado.png">
+	 <!-- TEXTURA DEL PASTO -->
+    <img id="texturaPasto" src="grass03.png">
+</a-assets>
+  <!-- ILUMINACIÓN -->
+  <a-light type="ambient"
+           color="#FFFFFF"
+           intensity="1.2">
+  </a-light>
+
+  <a-light type="directional"
+           position="-3 5 4"
+           intensity="1.5">
+  </a-light>
+  <!-- CIELO AZUL -->
+<a-sky color="#87CEEB" radius="100"></a-sky>
+<a-plane
+    position="0 0 0"
+    rotation="-90 0 0"
+    width="200"
+    height="200"
+    material="src: #texturaPasto; repeat: 20 20; roughness: 1">
+</a-plane>
+  <!-- SUELO 
+  <a-plane
+    rotation="-90 0 0"
+    width="200"
+    height="200"
+    color="#C9D5D0">
+  </a-plane>-->
+
+  <!-- ESTRUCTURA METÁLICA -->
+  <a-entity id="estructura">
+
+    
+<!-- SOPORTE LATERAL IZQUIERDO -->
+
+<a-cylinder
+    position="-1.2 1.14 -0.5"
+    radius="0.075"
+    height="2.23"
+    rotation="18.3 0 0"
+    color="#555555">
+</a-cylinder>
+
+<a-cylinder
+    position="-1.2 1.14 0.5"
+    radius="0.075"
+    height="2.23"
+    rotation="-18.3 0 0"
+    color="#555555">
+</a-cylinder>
+
+<a-cylinder
+    position="-1.2 2.08 0"
+    radius="0.085"
+    height="0.55"
+    rotation="90 0 0"
+    color="#444444">
+</a-cylinder>
+
+
+<!-- SOPORTE LATERAL DERECHO -->
+
+<a-cylinder
+    position="1.2 1.14 -0.5"
+    radius="0.075"
+    height="2.23"
+    rotation="18.3 0 0"
+    color="#555555">
+</a-cylinder>
+
+<a-cylinder
+    position="1.2 1.14 0.5"
+    radius="0.075"
+    height="2.23"
+    rotation="-18.3 0 0"
+    color="#555555">
+</a-cylinder>
+
+<a-cylinder
+    position="1.2 2.08 0"
+    radius="0.085"
+    height="0.55"
+    rotation="90 0 0"
+    color="#444444">
+</a-cylinder>
+
+    
+
+<!-- ARCO EXTERIOR: U INVERTIDA -->
+<a-torus
+    position="0 2.2 0"
+    radius="1.12"
+    radius-tubular="0.045"
+    arc="300"
+    rotation="0 0 300"
+    color="#555B60">
+</a-torus>
+
+<!-- ARCO INTERIOR: U INVERTIDA -->
+<a-torus
+    position="0 2.2 0"
+    radius="0.94"
+    radius-tubular="0.028"
+    arc="300"
+    rotation="0 0 300"
+    color="#777D80">
+</a-torus>
+
+<!-- PIEZAS QUE UNEN LOS DOS ARCOS -->
+
+<!-- UNION SUPERIOR -->
+<a-cylinder
+    position="0 3.2 0"
+    radius="0.05"
+    height="0.10"
+    color="#555B60">
+</a-cylinder>
+
+<!-- UNION SUPERIOR IZQUIERDA -->
+<!-- <a-cylinder
+    position="-0.7 2.957 0"
+    radius="0.05"
+    height="0.10"
+    rotation="0 0 -45"
+    color="#555B60">
+</a-cylinder> -->
+
+<!-- UNION SUPERIOR DERECHA -->
+<!-- <a-cylinder
+    position="0.757 2.957 0"
+    radius="0.05"
+    height="0.10"
+    rotation="0 0 45"
+    color="#555B60">
+</a-cylinder> -->
+
+  </a-entity>
+
+  <!-- EJE HORIZONTAL -->
+  <a-cylinder
+    position="0 2.2 0"
+    rotation="0 0 90"
+    radius="0.055"
+    height="2.5"
+    color="#555B60">
+  </a-cylinder>
+
+  <!-- DISCO DE MADERA
+  
+<!-- DISCO DE MADERA GIRATORIO -->
+<!--<a-entity id="disco" position="0 2.2 0">
+
+    <a-cylinder
+        radius="0.78"
+        height="0.16"
+        rotation="0 0 90"
+        color="#98643B">
+    </a-cylinder>
+
+</a-entity> -->
+  <a-entity id="disco" position="0 2.2 0">
+
+    <a-cylinder
+      radius="0.78"
+      height="0.16"
+      rotation="90 0 0"
+      color="#98643B">
+    </a-cylinder>
+ <!-- CARA FELIZ: LADO DELANTERO -->
+    <a-circle
+        radius="0.76"
+        position="0 0 0.081"
+       material="src: #caraFeliz; transparent: true; alphaTest: 0.05; side: double">
+    </a-circle>
+
+    <!-- CARA ENOJADA: LADO TRASERO -->
+    <a-circle
+        radius="0.76"
+        position="0 0 -0.081"
+		rotation="0 0 180"
+        material="src: #caraEnojada; transparent: true; alphaTest: 0.05; side: double">
+    </a-circle>
+
+  </a-entity>
+
+  
+<a-entity id="jugador" position="0 0 4.8">
+    <a-camera
+        id="camara"
+        position="0 1.6 0"
+        look-controls="
+            enabled: true;
+            touchEnabled: false;
+            mouseEnabled: true;
+            magicWindowTrackingEnabled: true"
+        touch-look>
+    </a-camera>
+</a-entity>
+</a-scene>
+
+<!-- CONTROLES TACTILES -->
+<style>
+  #controles {
+    position: fixed;
+    bottom: 25px;
+    left: 20px;
+    z-index: 999;
+    display: grid;
+    grid-template-columns: 55px 55px 55px;
+    grid-template-rows: 55px 55px;
+    gap: 5px;
+  }
+
+  #controles button {
+    border: 2px solid white;
+    border-radius: 15px;
+    background: rgba(40, 50, 60, 0.75);
+    color: white;
+    font-size: 25px;
+    touch-action: none;
+  }
+
+  #controles button:active {
+    background: #168C9E;
+  }
+</style>
+
+<div id="controles">
+
+  <div></div>
+  <button data-move="forward">▲</button>
+  <div></div>
+
+  <button data-move="left">◀</button>
+  <button data-move="back">▼</button>
+  <button data-move="right">▶</button>
+
+</div>
+
+<!-- BOTON PARA EMPUJAR EL DISCO -->
+<style>
+#empujar {
+    position: fixed;
+    bottom: 35px;
+    right: 20px;
+    z-index: 1000;
+    padding: 18px 22px;
+    border: 2px solid white;
+    border-radius: 18px;
+    background: #98643B;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    touch-action: none;
+}
+</style>
+
+<button id="empujar">EMPUJAR</button>
+
+<script>
+const jugador = document.querySelector("#jugador");
+const camara = document.querySelector("#camara");
+
+const movimiento = {
+  forward: false,
+  back: false,
+  left: false,
+  right: false
+};
+
+document.querySelectorAll("[data-move]").forEach(boton => {
+
+  const direccion = boton.dataset.move;
+
+  boton.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    movimiento[direccion] = true;
+    boton.setPointerCapture(e.pointerId);
+  });
+
+  const soltar = () => {
+    movimiento[direccion] = false;
+  };
+
+  boton.addEventListener("pointerup", soltar);
+  boton.addEventListener("pointercancel", soltar);
+  boton.addEventListener("lostpointercapture", soltar);
+
+});
+
+const teclas = {
+  w: "forward",
+  s: "back",
+  a: "left",
+  d: "right"
+};
+
+window.addEventListener("keydown", e => {
+  const direccion = teclas[e.key.toLowerCase()];
+  if (direccion) movimiento[direccion] = true;
+});
+
+window.addEventListener("keyup", e => {
+  const direccion = teclas[e.key.toLowerCase()];
+  if (direccion) movimiento[direccion] = false;
+});
+
+function caminar() {
+
+  const rotacion = camara.object3D.rotation.y;
+
+  const velocidad = 0.045;
+
+  let x = 0;
+  let z = 0;
+
+  const adelanteX = -Math.sin(rotacion);
+  const adelanteZ = -Math.cos(rotacion);
+
+  const derechaX = Math.cos(rotacion);
+  const derechaZ = -Math.sin(rotacion);
+
+  if (movimiento.forward) {
+    x += adelanteX;
+    z += adelanteZ;
+  }
+
+  if (movimiento.back) {
+    x -= adelanteX;
+    z -= adelanteZ;
+  }
+
+  if (movimiento.right) {
+    x += derechaX;
+    z += derechaZ;
+  }
+
+  if (movimiento.left) {
+    x -= derechaX;
+    z -= derechaZ;
+  }
+
+  const largo = Math.hypot(x, z);
+
+  if (largo > 0) {
+    jugador.object3D.position.x +=
+      (x / largo) * velocidad;
+
+    jugador.object3D.position.z +=
+      (z / largo) * velocidad;
+  }
+
+  requestAnimationFrame(caminar);
+}
+
+caminar();
+</script>
+
+
+<script>
+const discoGiratorio = document.querySelector("#disco");
+const botonEmpujarDisco = document.querySelector("#empujar");
+
+let velocidadGiro = 0;
+let ultimoTiempoGiro = 0;
+
+// APLICAR EMPUJE
+function empujarDisco() {
+
+    velocidadGiro += 3 + Math.random() * 3;
+
+    velocidadGiro = Math.min(velocidadGiro, 9);
+
+    botonEmpujarDisco.textContent = "¡EMPUJADO!";
+}
+
+// BOTON TACTIL
+botonEmpujarDisco.addEventListener("click", () => {
+    empujarDisco();
+});
+
+// TECLA E
+window.addEventListener("keydown", e => {
+
+    if (e.key.toLowerCase() === "e" && !e.repeat) {
+        empujarDisco();
+    }
+
+});
+
+// MOVIMIENTO DEL DISCO
+function actualizarGiro(tiempo) {
+
+    if (!ultimoTiempoGiro) {
+        ultimoTiempoGiro = tiempo;
+    }
+
+    const delta = Math.min(
+        (tiempo - ultimoTiempoGiro) / 1000,
+        0.05
+    );
+
+    ultimoTiempoGiro = tiempo;
+
+    if (velocidadGiro > 0.01) {
+
+        discoGiratorio.object3D.rotation.x +=
+            velocidadGiro * delta;
+
+        velocidadGiro *= Math.exp(-0.65 * delta);
+
+    } else {
+        velocidadGiro = 0;
+    }
+
+    requestAnimationFrame(actualizarGiro);
+}
+
+requestAnimationFrame(actualizarGiro);
+</script>
+
+
+
+</body>
+</html>
